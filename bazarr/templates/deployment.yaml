@@ -1,0 +1,43 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}
+  labels: {{ include "labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels: {{ include "selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels: {{ include "selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+      - name: bazarr
+        image: {{ template "image" . }}
+        imagePullPolicy: {{ .Values.image.pullPolicy }}
+        envFrom:
+        - configMapRef:
+            name: {{ template "configmap.fullname" . }}
+        ports:
+        - name: http
+          containerPort: {{ .Values.service.port }}
+          protocol: TCP
+        resources:
+          {{- toYaml .Values.resources | nindent 10 }}
+        volumeMounts: {{ include "volumeMounts" . | nindent 10 }}
+        {{- if .Values.livenessProbe.enabled }}
+        {{- with .Values.livenessProbe }}
+        livenessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: {{ .initialDelaySeconds }}
+          periodSeconds: {{ .periodSeconds }}
+          timeoutSeconds: {{ .timeoutSeconds }}
+          successThreshold: {{ .successThreshold }}
+          failureThreshold: {{ .failureThreshold }}
+        {{- end }}
+        {{- end }}
+      volumes: {{ include "volumes" . | nindent 8 }}

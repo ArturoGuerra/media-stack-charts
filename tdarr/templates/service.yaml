@@ -1,0 +1,31 @@
+{{- range $sname, $svc :=  .Values.services }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  {{- $name := printf "%s-controller" (include "service.fullname" $) }}
+  name: {{ printf "%s-controller-%s" (include "service.fullname" $) $sname }}
+  labels: {{ include "labels" $name | nindent 4 }}
+  {{- if $svc.annotations }}
+  annotations: {{ toYaml $svc.annotations | nindent 4 }}
+  {{- end }}
+spec:
+  type: {{ $svc.type }}
+  {{- if eq $svc.type "LoadBalancer" }}
+  externalTrafficPolicy: {{ $svc.externalTrafficPolicy }}
+  {{- end }}
+  {{- if $svc.loadBalancerIP }}
+  loadBalancerIP: {{ $svc.loadBalancerIP }}
+  {{- end }}
+  {{- if $svc.clusterIP }}
+  clusterIP: {{ $svc.clusterIP }}
+  {{- end }}
+  ports:
+  {{- range $svc.ports }}
+  - name: {{ .name }}
+    protocol: {{ .protocol }}
+    port: {{ .port }}
+    targetPort: {{ .targetPort }}
+  {{- end }}
+  selector: {{ include "selectorLabels" $name | nindent 4 }}
+{{- end }}

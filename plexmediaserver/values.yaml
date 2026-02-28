@@ -1,0 +1,108 @@
+# Default values for plexmediaserver.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: plexinc/pms-docker
+  pullPolicy: IfNotPresent
+  # Overrides the image tag whose default is the chart appVersion.
+  tag: "latest" # latest, plexpass, or public
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+service:
+  type: ClusterIP
+  port: 32400
+  externalTrafficPolicy: Cluster
+  loadBalancerIP: ""
+
+# Note: If you are using nginx ingress, you will need to add the following annotations to your ingress:
+# nginx.ingress.kubernetes.io/proxy-send-timeout: "100m"
+# nginx.ingress.kubernetes.io/proxy-buffering: "off"
+# nginx.ingress.kubernetes.io/proxy-body-size: "1000m"
+# nginx.ingress.kubernetes.io/ssl-redirect: "false"
+# nginx.ingress.kubernetes.io/ssl-passthorugh: "true"
+
+# nginx.ingress.kubernetes.io/configuration-snippet: |
+#   proxy_set_header Host $host;
+#   proxy_set_header X-Real-IP $remote_addr;
+#   proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+#   proxy_set_header X-Forwarded-Proto $scheme;
+#   proxy_set_header Sec-WebSocket-Extensions $http_sec_websocket_extensions;
+#   proxy_set_header Sec-WebSocket-Key $http_sec_websocket_key;
+#   proxy_set_header Sec-WebSocket-Version $http_sec_websocket_version;
+#   proxy_set_header Upgrade $http_upgrade;
+#   proxy_set_header Connection "Upgrade";
+
+ingress:
+  enabled: false
+  annotations:
+    {}
+    # kubernetes.io/ingress.class: nginx
+    # kubernetes.io/tls-acme: "true"
+  hosts:
+    []
+    #  - chart-example.local
+  tls:
+    []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+persistence:
+  config:
+    enabled: true
+    emptyDir: false
+    mountPath: /config
+    accessMode: ReadWriteOnce
+    size: 25Gi
+    storageClass: ""
+    existingClaim: ""
+  media:
+    enabled: true
+    emptyDir: false
+    mountPath: /data
+    accessMode: ReadWriteOnce
+    size: 1000Gi
+    storageClass: ""
+    existingClaim: ""
+  transcode:
+    enabled: true
+    emptyDir: false
+    mountPath: /transcode
+    accessMode: ReadWriteOnce
+    size: 50Gi
+    storageClass: ""
+    existingClaim: ""
+
+# For Nvidia GPU add NVIDIA_DRIVER_CAPABILITIES: "compute,utility,video" to env
+env:
+  TZ: "America/New_York"
+  PLEX_UID: "1000"
+  PLEX_GID: "1000"
+  PLEX_CLAIM: ""
+  CHANGE_CONFIG_DIR_OWNERSHIP: "true"
+
+# For Nvidia GPU add nvidia.com/gpu: "1" to resources.limits
+# For Intel iGPU add gpu.intel.com/i915: "1" to resources.limits
+resources:
+  limits:
+    cpu: 2000m
+    memory: 4096Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 300 # 5 minutes
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+
+nodeSelector: {}

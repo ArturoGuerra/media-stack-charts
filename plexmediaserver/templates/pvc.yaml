@@ -1,0 +1,23 @@
+{{- range $k, $v := .Values.persistence -}}
+{{- if $v.enabled }}
+{{- if not $v.existingClaim }}
+{{- if not $v.emptyDir }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "pvc.fullname" $ }}-{{ $k }}
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  {{- if $v.storageClassName }}
+  storageClassName: {{ $v.storageClassName }}
+  {{- end }}
+  accessModes: 
+  - {{ $v.accessMode | default "ReadWriteOnce" }}
+  resources:
+    requests:
+      storage: {{ $v.size }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end -}}

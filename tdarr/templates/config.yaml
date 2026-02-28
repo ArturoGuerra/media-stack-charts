@@ -1,0 +1,30 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  {{ $name := printf "%s-controller" (include "configmap.fullname" .) }}
+  name: {{ $name }}
+  labels: {{ include "labels" $name | nindent 4 }}
+data:
+  {{- toYaml .Values.controller.config | nindent 2 }}
+  {{- toYaml .Values.controller.env | nindent 2 }}
+  inContainer: "true"
+{{- range $wname, $worker := .Values.workers.nodes }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  {{- $name := printf "%s-%s" (include "configmap.fullname" $) $wname }}
+  name: {{ $name }}
+  labels: {{ include "labels" $name | nindent 4 }}
+data:
+  {{- if $worker.env }}
+  {{- toYaml (merge $worker.env $.Values.workers.env) | nindent 2 }}
+  {{- else }}
+  {{- toYaml $.Values.workers.env | nindent 2 }}
+  {{- end }}
+  serverIP: {{ $.Values.workers.config.serverIP | default (printf "%s-controller-api" (include "service.fullname" $)) }}
+  serverPort: {{ $.Values.workers.config.serverPort | quote }}
+  nodeName: {{ $wname }}
+  nodeID: {{ $wname }}
+  inContainer: "true"
+{{- end }}

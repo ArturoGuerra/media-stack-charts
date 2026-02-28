@@ -1,0 +1,74 @@
+{{- range $name, $vol := .Values.controller.volumes }}
+{{- if $vol.enabled }}
+{{- if not $vol.existingClaim }}
+{{- if not $vol.emptyDir }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "pvc.fullname" $ }}-controller-{{ $name }}
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  {{- if .storageClassName }}
+  storageClassName: {{ $vol.storageClassName }}
+  {{- end }}
+  accessModes:
+  - {{ $vol.accessMode | default "ReadWriteOnce" }}
+  resources:
+    requests:
+      storage: {{ $vol.size }}
+---
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- range $nname, $node := .Values.workers.nodes }}
+{{- range $vname, $vol := $.Values.workers.volumes }}
+{{- if $vol.enabled }}
+{{- if not $vol.existingClaim }}
+{{- if not $vol.emptyDir }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "pvc.fullname" $ }}-node-{{ $nname }}-{{ $vname }}
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  {{- if $vol.storageClassName }}
+  storageClassName: {{ $vol.storageClassName }}
+  {{- end }}
+  accessModes:
+  - {{ $vol.accessMode }}
+  resources:
+    requests:
+      storage: {{ $vol.size }}
+---
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
+{{- range $name, $vol := .Values.volumes }}
+{{- if $vol.enabled }}
+{{- if not $vol.existingClaim }}
+{{- if not $vol.emptyDir }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "pvc.fullname" $ }}-{{ $name }}
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  {{- if $vol.storageClassName }}
+  storageClassName: {{ $vol.storageClassName }}
+  {{- end }}
+  accessModes:
+  - {{ $vol.accessMode | default "ReadWriteOnce" }}
+  resources:
+    requests:
+      storage: {{ $vol.size }}
+---
+{{- end }}
+{{- end }}
+{{- end }}
+{{- end }}
