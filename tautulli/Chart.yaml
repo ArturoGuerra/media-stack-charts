@@ -3,7 +3,7 @@ name: tautulli
 description: Helm chart for Tautulli, a monitoring and tracking tool for Plex Media Server
 type: application
 version: 1.0.0
-appVersion: "v2.16.1"
+appVersion: "v2.17.0"
 home: https://tautulli.com/
 sources:
   - https://github.com/Tautulli/Tautulli

@@ -3,7 +3,7 @@ name: radarr
 description: Helm chart for Radarr, a movie collection manager for Usenet and BitTorrent users
 type: application
 version: 1.0.0
-appVersion: "6.0.4"
+appVersion: "latest"
 home: https://radarr.video/
 sources:
   - https://github.com/Radarr/Radarr
