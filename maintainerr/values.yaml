@@ -1,0 +1,131 @@
+# Default values for maintainerr.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: ghcr.io/maintainerr/maintainerr
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+service:
+  type: ClusterIP
+  port: 6246
+  externalTrafficPolicy: Cluster
+  loadBalancerIP: ""
+
+ingress:
+  enabled: false
+  ingressClassName: ""
+  annotations: {}
+    # kubernetes.io/ingress.class: nginx
+    # cert-manager.io/cluster-issuer: letsencrypt-prod
+  hosts: []
+    #  - chart-example.local
+  tls: []
+    #  - secretName: chart-example-tls
+    #    hosts:
+    #      - chart-example.local
+
+persistence:
+  enabled: true
+  mountPath: /opt/data
+  size: 5Gi
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  existingClaim: ""
+  name: data
+
+extraVolumes: []
+extraVolumeMounts: []
+extraEnvVars: []
+
+env:
+  TZ: "America/New_York"
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 1024Mi
+  requests:
+    cpu: 100m
+    memory: 256Mi
+
+livenessProbe:
+  enabled: true
+  initialDelaySeconds: 30
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+httpRoute:
+  enabled: false
+  annotations: {}
+  parentRefs: []
+    # - name: my-gateway
+    #   namespace: networking
+    #   sectionName: https
+  hostnames: []
+    # - app.example.com
+  filters: []
+
+ingressRoute:
+  enabled: false
+  annotations: {}
+  entryPoints: []
+  routes: []
+    # - match: Host(`app.example.com`)
+    #   priority: 10
+    #   middlewares:
+    #     - name: my-auth-middleware
+    #       namespace: traefik
+  tls:
+    enabled: false
+    secretName: ""
+    options: {}
+
+podAnnotations: {}
+extraEnvFrom: []
+
+podSecurityContext: {}
+
+containerSecurityContext: {}
+
+readinessProbe:
+  enabled: true
+  initialDelaySeconds: 15
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 6
+  successThreshold: 1
+
+startupProbe:
+  enabled: false
+  initialDelaySeconds: 0
+  periodSeconds: 10
+  timeoutSeconds: 5
+  failureThreshold: 30
+  successThreshold: 1
+
+revisionHistoryLimit: 3
+
+strategy:
+  type: Recreate
+
+podDisruptionBudget:
+  enabled: false
+  minAvailable: 1
+  maxUnavailable: ""

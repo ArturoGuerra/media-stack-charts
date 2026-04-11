@@ -1,5 +1,6 @@
 {{- define "image" -}}
-{{ printf "%s:%s" .Values.image.repository .Values.image.tag }}
+{{- $tag := .Values.image.tag | default .Chart.AppVersion -}}
+{{ printf "%s:%s" .Values.image.repository $tag }}
 {{- end -}}
 
 {{- define "fullname" -}}
@@ -15,7 +16,7 @@
 {{- end -}}
 
 {{- define "pvc.fullname" -}}
-{{ template "fullname" . }}
+{{ template "fullname" . }}-{{ .Values.persistence.name | default "config" }}
 {{- end -}}
 
 {{- define "configmap.fullname" -}}
@@ -23,41 +24,38 @@
 {{- end -}}
 
 {{- define "labels" -}}
-app: {{ template "fullname" . }}
-app.kubernetes.io/name: {{ template "fullname" . }}
+app.kubernetes.io/name: {{ .Chart.Name }}
+app.kubernetes.io/instance: {{ .Release.Name }}
+app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
+app.kubernetes.io/managed-by: {{ .Release.Service }}
+helm.sh/chart: {{ printf "%s-%s" .Chart.Name .Chart.Version | replace "+" "_" }}
 {{- if .Values.labels }}
 {{ toYaml .Values.labels }}
 {{- end }}
 {{- end -}}
 
 {{- define "selectorLabels" -}}
-{{ include "labels" . }}
+app.kubernetes.io/name: {{ .Chart.Name }}
+app.kubernetes.io/instance: {{ .Release.Name }}
 {{- end -}}
 
 {{- define "volumeMounts" -}}
-{{- range $k, $v := .Values.persistence }}
-{{- if $v.enabled }}
-- name: {{ $k }}
-  mountPath: {{ $v.mountPath }}
+{{- if .Values.persistence.enabled }}
+- name: {{ .Values.persistence.name | default "config" }}
+  mountPath: {{ .Values.persistence.mountPath }}
 {{- end }}
+{{- with .Values.extraVolumeMounts }}
+{{ toYaml . }}
 {{- end }}
 {{- end -}}
 
 {{- define "volumes" -}}
-{{- range $k, $v := .Values.persistence }}
-{{- if $v.enabled }}
-- name: {{ $k }}
-  {{- if $v.emptyDir }}
-  {{- if $v.emptyDirConfig }}
-  emptyDir:
-    {{- toYaml $v.emptyDirConfig | nindent 4 }}
-  {{- else }}
-  emptyDir: {}
-  {{- end }}
-  {{- else }}
+{{- if .Values.persistence.enabled }}
+- name: {{ .Values.persistence.name | default "config" }}
   persistentVolumeClaim:
-    claimName: {{ $v.existingClaim | default (printf "%s-%s" (include "fullname" $) $k) }}
-  {{- end }}
+    claimName: {{ .Values.persistence.existingClaim | default (include "pvc.fullname" .) }}
 {{- end }}
+{{- with .Values.extraVolumes }}
+{{ toYaml . }}
 {{- end }}
 {{- end -}}

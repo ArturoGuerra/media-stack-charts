@@ -5,21 +5,40 @@ metadata:
   labels: {{ include "labels" . | nindent 4 }}
 spec:
   replicas: {{ .Values.replicaCount }}
+  revisionHistoryLimit: {{ default 3 .Values.revisionHistoryLimit }}
   strategy:
-    type: Recreate
+    type: {{ default "Recreate" .Values.strategy.type }}
   selector:
     matchLabels: {{ include "selectorLabels" . | nindent 6 }}
   template:
     metadata:
       labels: {{ include "selectorLabels" . | nindent 8 }}
+      {{- with .Values.podAnnotations }}
+      annotations: {{- toYaml . | nindent 8 }}
+      {{- end }}
     spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext: {{- toYaml . | nindent 8 }}
+      {{- end }}
       containers:
-      - name: sonarr
+      - name: {{ .Chart.Name }}
         image: {{ template "image" . }}
         imagePullPolicy: {{ .Values.image.pullPolicy }}
+        {{- with .Values.containerSecurityContext }}
+        securityContext: {{- toYaml . | nindent 10 }}
+        {{- end }}
         envFrom:
         - configMapRef:
             name: {{ template "configmap.fullname" . }}
+        {{- with .Values.extraEnvFrom }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        {{- with .Values.extraEnvVars }}
+        env: {{- toYaml . | nindent 8 }}
+        {{- end }}
         ports:
         - name: http
           containerPort: {{ .Values.service.port }}
@@ -40,4 +59,39 @@ spec:
           failureThreshold: {{ .failureThreshold }}
         {{- end }}
         {{- end }}
+        {{- if .Values.readinessProbe.enabled }}
+        {{- with .Values.readinessProbe }}
+        readinessProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: {{ .initialDelaySeconds }}
+          periodSeconds: {{ .periodSeconds }}
+          timeoutSeconds: {{ .timeoutSeconds }}
+          successThreshold: {{ .successThreshold }}
+          failureThreshold: {{ .failureThreshold }}
+        {{- end }}
+        {{- end }}
+        {{- if .Values.startupProbe.enabled }}
+        {{- with .Values.startupProbe }}
+        startupProbe:
+          httpGet:
+            path: /
+            port: http
+          initialDelaySeconds: {{ .initialDelaySeconds }}
+          periodSeconds: {{ .periodSeconds }}
+          timeoutSeconds: {{ .timeoutSeconds }}
+          successThreshold: {{ .successThreshold }}
+          failureThreshold: {{ .failureThreshold }}
+        {{- end }}
+        {{- end }}
       volumes: {{ include "volumes" . | nindent 8 }}
+      {{- if .Values.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+      tolerations: {{- toYaml .Values.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.affinity }}
+      affinity: {{- toYaml .Values.affinity | nindent 8 }}
+      {{- end }}

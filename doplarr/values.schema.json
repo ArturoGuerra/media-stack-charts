@@ -1,0 +1,494 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "required": ["replicaCount", "image"],
+    "properties": {
+        "replicaCount": {
+            "type": "integer",
+            "title": "Replica Count",
+            "description": "Number of pod replicas to deploy",
+            "minimum": 1,
+            "default": 1
+        },
+        "image": {
+            "type": "object",
+            "title": "Container Image",
+            "description": "Docker image configuration",
+            "required": ["repository"],
+            "properties": {
+                "repository": {
+                    "type": "string",
+                    "title": "Image Repository",
+                    "description": "Docker image repository URL",
+                    "default": "ghcr.io/kiranshila/doplarr"
+                },
+                "pullPolicy": {
+                    "type": "string",
+                    "title": "Image Pull Policy",
+                    "description": "Image pull policy for the container",
+                    "enum": ["Always", "IfNotPresent", "Never"],
+                    "default": "IfNotPresent"
+                },
+                "tag": {
+                    "type": "string",
+                    "title": "Image Tag",
+                    "description": "Image tag override (uses chart appVersion if empty)"
+                }
+            }
+        },
+        "imagePullSecrets": {
+            "type": "array",
+            "title": "Image Pull Secrets",
+            "description": "List of secrets for pulling private Docker images",
+            "items": {
+                "type": "object"
+            }
+        },
+        "nameOverride": {
+            "type": "string",
+            "title": "Name Override",
+            "description": "Override the release name"
+        },
+        "fullnameOverride": {
+            "type": "string",
+            "title": "Full Name Override",
+            "description": "Override the fully qualified app name"
+        },
+        "persistence": {
+            "type": "object",
+            "title": "Persistence Configuration",
+            "description": "PersistentVolume settings for application data",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enable Persistence",
+                    "description": "Whether to create a PersistentVolumeClaim",
+                    "default": true
+                },
+                "mountPath": {
+                    "type": "string",
+                    "title": "Mount Path",
+                    "description": "Container mount path for persistent storage",
+                    "default": "/config"
+                },
+                "size": {
+                    "type": "string",
+                    "title": "Size",
+                    "description": "PersistentVolumeClaim size (e.g., 5Gi, 10Gi)",
+                    "default": "5Gi"
+                },
+                "storageClass": {
+                    "type": "string",
+                    "title": "Storage Class",
+                    "description": "Storage class name (leave empty for default)"
+                },
+                "accessMode": {
+                    "type": "string",
+                    "title": "Access Mode",
+                    "description": "PersistentVolume access mode",
+                    "enum": [
+                        "ReadWriteOnce",
+                        "ReadOnlyMany",
+                        "ReadWriteMany",
+                        "ReadWriteOncePod"
+                    ],
+                    "default": "ReadWriteOnce"
+                },
+                "existingClaim": {
+                    "type": "string",
+                    "title": "Existing Claim",
+                    "description": "Use existing PersistentVolumeClaim instead of creating new"
+                },
+                "name": {
+                    "type": "string",
+                    "title": "Name",
+                    "description": "PersistentVolumeClaim name (default: fullname)",
+                    "default": "config"
+                }
+            }
+        },
+        "env": {
+            "type": "object",
+            "title": "Environment Variables",
+            "description": "Container environment variables",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "extraEnvVars": {
+            "type": "array",
+            "title": "Extra Environment Variables",
+            "description": "Additional environment variables (uses envFrom syntax)",
+            "items": {
+                "type": "object"
+            }
+        },
+        "extraEnvFrom": {
+            "type": "array",
+            "title": "Extra Environment From",
+            "description": "Additional envFrom sources (ConfigMap, Secret references)",
+            "items": {
+                "type": "object"
+            }
+        },
+        "extraVolumes": {
+            "type": "array",
+            "title": "Extra Volumes",
+            "description": "Additional volumes to attach to the pod",
+            "items": {
+                "type": "object"
+            }
+        },
+        "extraVolumeMounts": {
+            "type": "array",
+            "title": "Extra Volume Mounts",
+            "description": "Additional volume mounts for the container",
+            "items": {
+                "type": "object"
+            }
+        },
+        "resources": {
+            "type": "object",
+            "title": "Resource Limits and Requests",
+            "description": "CPU and memory resource configuration",
+            "properties": {
+                "limits": {
+                    "type": "object",
+                    "title": "Resource Limits",
+                    "description": "Maximum resources the container can use",
+                    "properties": {
+                        "cpu": {
+                            "type": "string",
+                            "description": "CPU limit (e.g., 1000m, 1)"
+                        },
+                        "memory": {
+                            "type": "string",
+                            "description": "Memory limit (e.g., 2048Mi, 2Gi)"
+                        }
+                    }
+                },
+                "requests": {
+                    "type": "object",
+                    "title": "Resource Requests",
+                    "description": "Minimum resources required for the container",
+                    "properties": {
+                        "cpu": {
+                            "type": "string",
+                            "description": "CPU request (e.g., 150m, 0.15)"
+                        },
+                        "memory": {
+                            "type": "string",
+                            "description": "Memory request (e.g., 384Mi, 512Mi)"
+                        }
+                    }
+                }
+            }
+        },
+        "livenessProbe": {
+            "type": "object",
+            "title": "Liveness Probe",
+            "description": "Pod liveness probe configuration",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enable Liveness Probe",
+                    "default": true
+                },
+                "initialDelaySeconds": {
+                    "type": "integer",
+                    "title": "Initial Delay",
+                    "description": "Delay before first probe (seconds)",
+                    "minimum": 0,
+                    "default": 30
+                },
+                "periodSeconds": {
+                    "type": "integer",
+                    "title": "Period",
+                    "description": "Probe interval (seconds)",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "timeoutSeconds": {
+                    "type": "integer",
+                    "title": "Timeout",
+                    "description": "Probe timeout (seconds)",
+                    "minimum": 1,
+                    "default": 5
+                },
+                "failureThreshold": {
+                    "type": "integer",
+                    "title": "Failure Threshold",
+                    "description": "Failed probe attempts before restart",
+                    "minimum": 1,
+                    "default": 6
+                },
+                "successThreshold": {
+                    "type": "integer",
+                    "title": "Success Threshold",
+                    "description": "Successful probe attempts required",
+                    "minimum": 1,
+                    "default": 1
+                }
+            }
+        },
+        "readinessProbe": {
+            "type": "object",
+            "title": "Readiness Probe",
+            "description": "Pod readiness probe configuration",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enable Readiness Probe",
+                    "default": true
+                },
+                "initialDelaySeconds": {
+                    "type": "integer",
+                    "title": "Initial Delay",
+                    "description": "Delay before first probe (seconds)",
+                    "minimum": 0,
+                    "default": 15
+                },
+                "periodSeconds": {
+                    "type": "integer",
+                    "title": "Period",
+                    "description": "Probe interval (seconds)",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "timeoutSeconds": {
+                    "type": "integer",
+                    "title": "Timeout",
+                    "description": "Probe timeout (seconds)",
+                    "minimum": 1,
+                    "default": 5
+                },
+                "failureThreshold": {
+                    "type": "integer",
+                    "title": "Failure Threshold",
+                    "description": "Failed probe attempts before removal from service",
+                    "minimum": 1,
+                    "default": 6
+                },
+                "successThreshold": {
+                    "type": "integer",
+                    "title": "Success Threshold",
+                    "description": "Successful probe attempts required",
+                    "minimum": 1,
+                    "default": 1
+                }
+            }
+        },
+        "startupProbe": {
+            "type": "object",
+            "title": "Startup Probe",
+            "description": "Pod startup probe configuration (for slow-starting containers)",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enable Startup Probe",
+                    "default": false
+                },
+                "initialDelaySeconds": {
+                    "type": "integer",
+                    "title": "Initial Delay",
+                    "description": "Delay before first probe (seconds)",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "periodSeconds": {
+                    "type": "integer",
+                    "title": "Period",
+                    "description": "Probe interval (seconds)",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "timeoutSeconds": {
+                    "type": "integer",
+                    "title": "Timeout",
+                    "description": "Probe timeout (seconds)",
+                    "minimum": 1,
+                    "default": 5
+                },
+                "failureThreshold": {
+                    "type": "integer",
+                    "title": "Failure Threshold",
+                    "description": "Failed probe attempts before container restart",
+                    "minimum": 1,
+                    "default": 30
+                },
+                "successThreshold": {
+                    "type": "integer",
+                    "title": "Success Threshold",
+                    "description": "Successful probe attempts required",
+                    "minimum": 1,
+                    "default": 1
+                }
+            }
+        },
+        "nodeSelector": {
+            "type": "object",
+            "title": "Node Selector",
+            "description": "Pod node selector labels",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "tolerations": {
+            "type": "array",
+            "title": "Tolerations",
+            "description": "Pod tolerations for node taints",
+            "items": {
+                "type": "object"
+            }
+        },
+        "affinity": {
+            "type": "object",
+            "title": "Affinity",
+            "description": "Pod affinity and anti-affinity rules"
+        },
+        "podAnnotations": {
+            "type": "object",
+            "title": "Pod Annotations",
+            "description": "Annotations to add to pod metadata"
+        },
+        "podSecurityContext": {
+            "type": "object",
+            "title": "Pod Security Context",
+            "description": "Security context for the entire pod",
+            "properties": {
+                "fsGroup": {
+                    "type": "integer",
+                    "description": "Filesystem group ID"
+                },
+                "fsGroupChangePolicy": {
+                    "type": "string",
+                    "description": "Filesystem group change policy (OnRootMismatch, Always)"
+                },
+                "seccompProfile": {
+                    "type": "object",
+                    "description": "Seccomp profile configuration"
+                }
+            }
+        },
+        "containerSecurityContext": {
+            "type": "object",
+            "title": "Container Security Context",
+            "description": "Security context for the container",
+            "properties": {
+                "allowPrivilegeEscalation": {
+                    "type": "boolean",
+                    "description": "Allow privilege escalation"
+                },
+                "capabilities": {
+                    "type": "object",
+                    "description": "Linux capabilities configuration"
+                },
+                "privileged": {
+                    "type": "boolean",
+                    "description": "Run container in privileged mode"
+                },
+                "readOnlyRootFilesystem": {
+                    "type": "boolean",
+                    "description": "Mount root filesystem as read-only"
+                }
+            }
+        },
+        "revisionHistoryLimit": {
+            "type": "integer",
+            "title": "Revision History Limit",
+            "description": "Number of old ReplicaSets to retain for rollback",
+            "minimum": 0,
+            "default": 3
+        },
+        "strategy": {
+            "type": "object",
+            "title": "Deployment Strategy",
+            "description": "Pod deployment strategy (Recreate or RollingUpdate)",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "title": "Strategy Type",
+                    "enum": ["Recreate", "RollingUpdate"],
+                    "default": "Recreate"
+                },
+                "rollingUpdate": {
+                    "type": "object",
+                    "title": "Rolling Update Config",
+                    "description": "RollingUpdate configuration (only for RollingUpdate strategy)",
+                    "properties": {
+                        "maxSurge": {
+                            "oneOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ],
+                            "description": "Maximum additional pods during update"
+                        },
+                        "maxUnavailable": {
+                            "oneOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ],
+                            "description": "Maximum unavailable pods during update"
+                        }
+                    }
+                }
+            }
+        },
+        "podDisruptionBudget": {
+            "type": "object",
+            "title": "Pod Disruption Budget",
+            "description": "Pod Disruption Budget for high availability",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enable PDB",
+                    "default": false
+                },
+                "minAvailable": {
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ],
+                    "title": "Minimum Available",
+                    "description": "Minimum available pods (number or percentage string)"
+                },
+                "maxUnavailable": {
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ],
+                    "title": "Maximum Unavailable",
+                    "description": "Maximum unavailable pods (number or percentage string)"
+                }
+            }
+        },
+        "labels": {
+            "type": "object",
+            "title": "Custom Labels",
+            "description": "Additional labels for all resources",
+            "additionalProperties": {
+                "type": "string"
+            }
+        }
+    },
+    "title": "Doplarr Helm Chart Values",
+    "description": "Configuration values for Doplarr Helm chart deployment"
+}

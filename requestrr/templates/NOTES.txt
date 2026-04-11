@@ -1,0 +1,24 @@
+{{ .Chart.Name }} {{ .Chart.AppVersion }} has been deployed.
+
+{{- if .Values.httpRoute.enabled }}
+Access via Gateway API HTTPRoute:
+{{- range .Values.httpRoute.hostnames }}
+  https://{{ . }}
+{{- end }}
+{{- else if .Values.ingressRoute.enabled }}
+Access via Traefik IngressRoute:
+{{- range .Values.ingressRoute.routes }}
+  {{ .match }}
+{{- end }}
+{{- else if .Values.ingress.enabled }}
+Access via Ingress:
+{{- range .Values.ingress.hosts }}
+  http{{ if $.Values.ingress.tls }}s{{ end }}://{{ . }}
+{{- end }}
+{{- else if contains "LoadBalancer" .Values.service.type }}
+  NOTE: LoadBalancer IP may take a few minutes to be assigned.
+  kubectl get svc --namespace {{ .Release.Namespace }} {{ include "fullname" . }}
+{{- else }}
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+  Then visit: http://localhost:{{ .Values.service.port }}
+{{- end }}

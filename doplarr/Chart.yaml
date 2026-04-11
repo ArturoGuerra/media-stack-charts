@@ -1,0 +1,15 @@
+apiVersion: v2
+name: doplarr
+description: Helm chart for Doplarr, a Discord bot for requesting media via Overseerr or Sonarr/Radarr
+type: application
+version: 1.0.0
+appVersion: "latest"
+home: https://github.com/kiranshila/Doplarr
+sources:
+  - https://github.com/kiranshila/Doplarr
+maintainers:
+  - name: arturo
+dependencies:
+  - name: common
+    version: "1.0.0"
+    repository: "file://../common"

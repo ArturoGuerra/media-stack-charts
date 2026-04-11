@@ -1,0 +1,797 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "title": "Sonarr Helm Chart Values",
+    "description": "Configuration values for Sonarr Helm chart deployment",
+    "required": ["replicaCount", "image", "service"],
+    "properties": {
+        "replicaCount": {
+            "type": "integer",
+            "title": "Replica Count",
+            "description": "Number of Sonarr pod replicas to deploy",
+            "minimum": 1,
+            "default": 1
+        },
+        "image": {
+            "type": "object",
+            "title": "Container Image",
+            "description": "Docker image configuration",
+            "required": ["repository"],
+            "properties": {
+                "repository": {
+                    "type": "string",
+                    "title": "Image Repository",
+                    "description": "Docker image repository URL",
+                    "default": "lscr.io/linuxserver/sonarr"
+                },
+                "pullPolicy": {
+                    "type": "string",
+                    "title": "Image Pull Policy",
+                    "description": "Image pull policy for the container",
+                    "enum": ["Always", "IfNotPresent", "Never"],
+                    "default": "IfNotPresent"
+                },
+                "tag": {
+                    "type": "string",
+                    "title": "Image Tag",
+                    "description": "Image tag override (uses chart appVersion if empty)"
+                }
+            }
+        },
+        "imagePullSecrets": {
+            "type": "array",
+            "title": "Image Pull Secrets",
+            "description": "List of secrets for pulling private Docker images",
+            "items": {
+                "type": "object"
+            }
+        },
+        "nameOverride": {
+            "type": "string",
+            "title": "Name Override",
+            "description": "Override the release name"
+        },
+        "fullnameOverride": {
+            "type": "string",
+            "title": "Full Name Override",
+            "description": "Override the fully qualified app name"
+        },
+        "service": {
+            "type": "object",
+            "title": "Service Configuration",
+            "description": "Kubernetes Service settings",
+            "required": ["type", "port"],
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "title": "Service Type",
+                    "description": "Kubernetes Service type",
+                    "enum": [
+                        "ClusterIP",
+                        "NodePort",
+                        "LoadBalancer",
+                        "ExternalName"
+                    ],
+                    "default": "ClusterIP"
+                },
+                "port": {
+                    "type": "integer",
+                    "title": "Service Port",
+                    "description": "Port exposed by the Service",
+                    "minimum": 1,
+                    "maximum": 65535,
+                    "default": 8989
+                },
+                "externalTrafficPolicy": {
+                    "type": "string",
+                    "title": "External Traffic Policy",
+                    "description": "How external traffic should be routed (NodePort/LoadBalancer only)",
+                    "enum": ["Cluster", "Local"],
+                    "default": "Cluster"
+                },
+                "loadBalancerIP": {
+                    "type": "string",
+                    "title": "LoadBalancer IP",
+                    "description": "Static IP for LoadBalancer service"
+                },
+                "annotations": {
+                    "type": "object",
+                    "title": "Service Annotations",
+                    "description": "Annotations to add to the Service"
+                }
+            }
+        },
+        "ingress": {
+            "type": "object",
+            "title": "Ingress Configuration",
+            "description": "Kubernetes Ingress (NGINX, HAProxy, etc.) configuration",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enable Ingress",
+                    "description": "Whether to create an Ingress resource",
+                    "default": false
+                },
+                "ingressClassName": {
+                    "type": "string",
+                    "title": "Ingress Class Name",
+                    "description": "IngressClass name (e.g., 'nginx', 'haproxy')",
+                    "default": ""
+                },
+                "annotations": {
+                    "type": "object",
+                    "title": "Ingress Annotations",
+                    "description": "Annotations for Ingress (cert-manager, authentication, etc.)"
+                },
+                "hosts": {
+                    "type": "array",
+                    "title": "Ingress Hosts",
+                    "description": "List of hostnames to route traffic to this service",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "tls": {
+                    "type": "array",
+                    "title": "TLS Configuration",
+                    "description": "TLS certificate configuration for Ingress",
+                    "items": {
+                        "type": "object",
+                        "required": ["secretName", "hosts"],
+                        "properties": {
+                            "secretName": {
+                                "type": "string",
+                                "title": "Secret Name",
+                                "description": "Name of the TLS secret"
+                            },
+                            "hosts": {
+                                "type": "array",
+                                "title": "TLS Hosts",
+                                "description": "Hostnames covered by this TLS certificate",
+                                "items": {
+                                    "type": "string"
+                                },
+                                "minItems": 1
+                            }
+                        }
+                    }
+                }
+            }
+        },
+        "httpRoute": {
+            "type": "object",
+            "title": "HTTPRoute Configuration",
+            "description": "Gateway API HTTPRoute (CNCF standard, Traefik 2.10+)",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enable HTTPRoute",
+                    "description": "Whether to create an HTTPRoute resource",
+                    "default": false
+                },
+                "annotations": {
+                    "type": "object",
+                    "title": "HTTPRoute Annotations",
+                    "description": "Annotations for HTTPRoute"
+                },
+                "parentRefs": {
+                    "type": "array",
+                    "title": "Parent Gateway References",
+                    "description": "Gateway references - REQUIRED when httpRoute is enabled",
+                    "items": {
+                        "type": "object",
+                        "title": "Parent Reference",
+                        "required": ["name"],
+                        "properties": {
+                            "name": {
+                                "type": "string",
+                                "title": "Gateway Name",
+                                "description": "Name of the Gateway resource"
+                            },
+                            "namespace": {
+                                "type": "string",
+                                "title": "Gateway Namespace",
+                                "description": "Namespace of the Gateway resource"
+                            },
+                            "sectionName": {
+                                "type": "string",
+                                "title": "Gateway Section",
+                                "description": "Specific listener section on the Gateway (e.g., 'https')"
+                            }
+                        }
+                    }
+                },
+                "hostnames": {
+                    "type": "array",
+                    "title": "Hostnames",
+                    "description": "List of hostnames to match",
+                    "items": {
+                        "type": "string"
+                    }
+                },
+                "filters": {
+                    "type": "array",
+                    "title": "Filters",
+                    "description": "HTTPRoute filters (RequestHeaderModifier, etc.)",
+                    "items": {
+                        "type": "object",
+                        "properties": {
+                            "type": {
+                                "type": "string",
+                                "description": "Filter type (RequestHeaderModifier, RequestMirror, etc.)"
+                            }
+                        }
+                    }
+                }
+            },
+            "if": {
+                "properties": {
+                    "enabled": {
+                        "const": true
+                    }
+                },
+                "required": ["enabled"]
+            },
+            "then": {
+                "required": ["parentRefs"],
+                "properties": {
+                    "parentRefs": {
+                        "minItems": 1,
+                        "description": "parentRefs is required and must not be empty when httpRoute is enabled"
+                    }
+                }
+            }
+        },
+        "ingressRoute": {
+            "type": "object",
+            "title": "IngressRoute Configuration",
+            "description": "Traefik IngressRoute (Traefik-specific alternative to Ingress)",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enable IngressRoute",
+                    "description": "Whether to create an IngressRoute resource",
+                    "default": false
+                },
+                "annotations": {
+                    "type": "object",
+                    "title": "IngressRoute Annotations",
+                    "description": "Annotations for IngressRoute"
+                },
+                "entryPoints": {
+                    "type": "array",
+                    "title": "Entry Points",
+                    "description": "Traefik entry points (e.g., 'websecure', 'web')",
+                    "items": {
+                        "type": "string"
+                    },
+                    "default": ["websecure"]
+                },
+                "routes": {
+                    "type": "array",
+                    "title": "Routes",
+                    "description": "Routing rules - REQUIRED when ingressRoute is enabled. At least one route must be defined.",
+                    "items": {
+                        "type": "object",
+                        "title": "Route",
+                        "required": ["match"],
+                        "properties": {
+                            "match": {
+                                "type": "string",
+                                "title": "Route Match",
+                                "description": "Traefik routing rule (e.g., Host(`app.example.com`), PathPrefix(`/app`))"
+                            },
+                            "priority": {
+                                "type": "integer",
+                                "title": "Route Priority",
+                                "description": "Priority for route matching (higher = higher priority)"
+                            },
+                            "middlewares": {
+                                "type": "array",
+                                "title": "Middlewares",
+                                "description": "Traefik middlewares to apply",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "name": {
+                                            "type": "string",
+                                            "description": "Middleware name"
+                                        },
+                                        "namespace": {
+                                            "type": "string",
+                                            "description": "Middleware namespace"
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "tls": {
+                    "type": "object",
+                    "title": "TLS Configuration",
+                    "description": "TLS settings for IngressRoute",
+                    "properties": {
+                        "enabled": {
+                            "type": "boolean",
+                            "title": "Enable TLS",
+                            "description": "Whether to enable TLS for this route",
+                            "default": false
+                        },
+                        "secretName": {
+                            "type": "string",
+                            "title": "Secret Name",
+                            "description": "TLS certificate secret name"
+                        },
+                        "options": {
+                            "type": "object",
+                            "title": "TLS Options",
+                            "description": "Traefik TLS options reference",
+                            "properties": {
+                                "name": {
+                                    "type": "string",
+                                    "description": "TLSOptions resource name"
+                                },
+                                "namespace": {
+                                    "type": "string",
+                                    "description": "TLSOptions resource namespace"
+                                }
+                            }
+                        }
+                    }
+                }
+            },
+            "if": {
+                "properties": {
+                    "enabled": {
+                        "const": true
+                    }
+                },
+                "required": ["enabled"]
+            },
+            "then": {
+                "required": ["routes"],
+                "properties": {
+                    "routes": {
+                        "minItems": 1,
+                        "description": "routes is required and must not be empty when ingressRoute is enabled"
+                    }
+                }
+            }
+        },
+        "persistence": {
+            "type": "object",
+            "title": "Persistence Configuration",
+            "description": "PersistentVolume settings for application data",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enable Persistence",
+                    "description": "Whether to create a PersistentVolumeClaim",
+                    "default": true
+                },
+                "mountPath": {
+                    "type": "string",
+                    "title": "Mount Path",
+                    "description": "Container mount path for persistent storage",
+                    "default": "/config"
+                },
+                "size": {
+                    "type": "string",
+                    "title": "Size",
+                    "description": "PersistentVolumeClaim size (e.g., 5Gi, 10Gi)",
+                    "default": "5Gi"
+                },
+                "storageClass": {
+                    "type": "string",
+                    "title": "Storage Class",
+                    "description": "Storage class name (leave empty for default)"
+                },
+                "accessMode": {
+                    "type": "string",
+                    "title": "Access Mode",
+                    "description": "PersistentVolume access mode",
+                    "enum": [
+                        "ReadWriteOnce",
+                        "ReadOnlyMany",
+                        "ReadWriteMany",
+                        "ReadWriteOncePod"
+                    ],
+                    "default": "ReadWriteOnce"
+                },
+                "existingClaim": {
+                    "type": "string",
+                    "title": "Existing Claim",
+                    "description": "Use existing PersistentVolumeClaim instead of creating new"
+                },
+                "name": {
+                    "type": "string",
+                    "title": "Name",
+                    "description": "PersistentVolumeClaim name (default: fullname)",
+                    "default": "config"
+                }
+            }
+        },
+        "env": {
+            "type": "object",
+            "title": "Environment Variables",
+            "description": "Container environment variables",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "extraEnvVars": {
+            "type": "array",
+            "title": "Extra Environment Variables",
+            "description": "Additional environment variables (uses envFrom syntax)",
+            "items": {
+                "type": "object"
+            }
+        },
+        "extraEnvFrom": {
+            "type": "array",
+            "title": "Extra Environment From",
+            "description": "Additional envFrom sources (ConfigMap, Secret references)",
+            "items": {
+                "type": "object"
+            }
+        },
+        "extraVolumes": {
+            "type": "array",
+            "title": "Extra Volumes",
+            "description": "Additional volumes to attach to the pod",
+            "items": {
+                "type": "object"
+            }
+        },
+        "extraVolumeMounts": {
+            "type": "array",
+            "title": "Extra Volume Mounts",
+            "description": "Additional volume mounts for the container",
+            "items": {
+                "type": "object"
+            }
+        },
+        "resources": {
+            "type": "object",
+            "title": "Resource Limits and Requests",
+            "description": "CPU and memory resource configuration",
+            "properties": {
+                "limits": {
+                    "type": "object",
+                    "title": "Resource Limits",
+                    "description": "Maximum resources the container can use",
+                    "properties": {
+                        "cpu": {
+                            "type": "string",
+                            "description": "CPU limit (e.g., 1000m, 1)"
+                        },
+                        "memory": {
+                            "type": "string",
+                            "description": "Memory limit (e.g., 2048Mi, 2Gi)"
+                        }
+                    }
+                },
+                "requests": {
+                    "type": "object",
+                    "title": "Resource Requests",
+                    "description": "Minimum resources required for the container",
+                    "properties": {
+                        "cpu": {
+                            "type": "string",
+                            "description": "CPU request (e.g., 150m, 0.15)"
+                        },
+                        "memory": {
+                            "type": "string",
+                            "description": "Memory request (e.g., 384Mi, 512Mi)"
+                        }
+                    }
+                }
+            }
+        },
+        "livenessProbe": {
+            "type": "object",
+            "title": "Liveness Probe",
+            "description": "Pod liveness probe configuration",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enable Liveness Probe",
+                    "default": true
+                },
+                "initialDelaySeconds": {
+                    "type": "integer",
+                    "title": "Initial Delay",
+                    "description": "Delay before first probe (seconds)",
+                    "minimum": 0,
+                    "default": 30
+                },
+                "periodSeconds": {
+                    "type": "integer",
+                    "title": "Period",
+                    "description": "Probe interval (seconds)",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "timeoutSeconds": {
+                    "type": "integer",
+                    "title": "Timeout",
+                    "description": "Probe timeout (seconds)",
+                    "minimum": 1,
+                    "default": 5
+                },
+                "failureThreshold": {
+                    "type": "integer",
+                    "title": "Failure Threshold",
+                    "description": "Failed probe attempts before restart",
+                    "minimum": 1,
+                    "default": 6
+                },
+                "successThreshold": {
+                    "type": "integer",
+                    "title": "Success Threshold",
+                    "description": "Successful probe attempts required",
+                    "minimum": 1,
+                    "default": 1
+                }
+            }
+        },
+        "readinessProbe": {
+            "type": "object",
+            "title": "Readiness Probe",
+            "description": "Pod readiness probe configuration",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enable Readiness Probe",
+                    "default": true
+                },
+                "initialDelaySeconds": {
+                    "type": "integer",
+                    "title": "Initial Delay",
+                    "description": "Delay before first probe (seconds)",
+                    "minimum": 0,
+                    "default": 15
+                },
+                "periodSeconds": {
+                    "type": "integer",
+                    "title": "Period",
+                    "description": "Probe interval (seconds)",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "timeoutSeconds": {
+                    "type": "integer",
+                    "title": "Timeout",
+                    "description": "Probe timeout (seconds)",
+                    "minimum": 1,
+                    "default": 5
+                },
+                "failureThreshold": {
+                    "type": "integer",
+                    "title": "Failure Threshold",
+                    "description": "Failed probe attempts before removal from service",
+                    "minimum": 1,
+                    "default": 6
+                },
+                "successThreshold": {
+                    "type": "integer",
+                    "title": "Success Threshold",
+                    "description": "Successful probe attempts required",
+                    "minimum": 1,
+                    "default": 1
+                }
+            }
+        },
+        "startupProbe": {
+            "type": "object",
+            "title": "Startup Probe",
+            "description": "Pod startup probe configuration (for slow-starting containers)",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enable Startup Probe",
+                    "default": false
+                },
+                "initialDelaySeconds": {
+                    "type": "integer",
+                    "title": "Initial Delay",
+                    "description": "Delay before first probe (seconds)",
+                    "minimum": 0,
+                    "default": 0
+                },
+                "periodSeconds": {
+                    "type": "integer",
+                    "title": "Period",
+                    "description": "Probe interval (seconds)",
+                    "minimum": 1,
+                    "default": 10
+                },
+                "timeoutSeconds": {
+                    "type": "integer",
+                    "title": "Timeout",
+                    "description": "Probe timeout (seconds)",
+                    "minimum": 1,
+                    "default": 5
+                },
+                "failureThreshold": {
+                    "type": "integer",
+                    "title": "Failure Threshold",
+                    "description": "Failed probe attempts before container restart",
+                    "minimum": 1,
+                    "default": 30
+                },
+                "successThreshold": {
+                    "type": "integer",
+                    "title": "Success Threshold",
+                    "description": "Successful probe attempts required",
+                    "minimum": 1,
+                    "default": 1
+                }
+            }
+        },
+        "nodeSelector": {
+            "type": "object",
+            "title": "Node Selector",
+            "description": "Pod node selector labels",
+            "additionalProperties": {
+                "type": "string"
+            }
+        },
+        "tolerations": {
+            "type": "array",
+            "title": "Tolerations",
+            "description": "Pod tolerations for node taints",
+            "items": {
+                "type": "object"
+            }
+        },
+        "affinity": {
+            "type": "object",
+            "title": "Affinity",
+            "description": "Pod affinity and anti-affinity rules"
+        },
+        "podAnnotations": {
+            "type": "object",
+            "title": "Pod Annotations",
+            "description": "Annotations to add to pod metadata"
+        },
+        "podSecurityContext": {
+            "type": "object",
+            "title": "Pod Security Context",
+            "description": "Security context for the entire pod",
+            "properties": {
+                "fsGroup": {
+                    "type": "integer",
+                    "description": "Filesystem group ID"
+                },
+                "fsGroupChangePolicy": {
+                    "type": "string",
+                    "description": "Filesystem group change policy (OnRootMismatch, Always)"
+                },
+                "seccompProfile": {
+                    "type": "object",
+                    "description": "Seccomp profile configuration"
+                }
+            }
+        },
+        "containerSecurityContext": {
+            "type": "object",
+            "title": "Container Security Context",
+            "description": "Security context for the container",
+            "properties": {
+                "allowPrivilegeEscalation": {
+                    "type": "boolean",
+                    "description": "Allow privilege escalation"
+                },
+                "capabilities": {
+                    "type": "object",
+                    "description": "Linux capabilities configuration"
+                },
+                "privileged": {
+                    "type": "boolean",
+                    "description": "Run container in privileged mode"
+                },
+                "readOnlyRootFilesystem": {
+                    "type": "boolean",
+                    "description": "Mount root filesystem as read-only"
+                }
+            }
+        },
+        "revisionHistoryLimit": {
+            "type": "integer",
+            "title": "Revision History Limit",
+            "description": "Number of old ReplicaSets to retain for rollback",
+            "minimum": 0,
+            "default": 3
+        },
+        "strategy": {
+            "type": "object",
+            "title": "Deployment Strategy",
+            "description": "Pod deployment strategy (Recreate or RollingUpdate)",
+            "properties": {
+                "type": {
+                    "type": "string",
+                    "title": "Strategy Type",
+                    "enum": ["Recreate", "RollingUpdate"],
+                    "default": "Recreate"
+                },
+                "rollingUpdate": {
+                    "type": "object",
+                    "title": "Rolling Update Config",
+                    "description": "RollingUpdate configuration (only for RollingUpdate strategy)",
+                    "properties": {
+                        "maxSurge": {
+                            "oneOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ],
+                            "description": "Maximum additional pods during update"
+                        },
+                        "maxUnavailable": {
+                            "oneOf": [
+                                {
+                                    "type": "integer"
+                                },
+                                {
+                                    "type": "string"
+                                }
+                            ],
+                            "description": "Maximum unavailable pods during update"
+                        }
+                    }
+                }
+            }
+        },
+        "podDisruptionBudget": {
+            "type": "object",
+            "title": "Pod Disruption Budget",
+            "description": "Pod Disruption Budget for high availability",
+            "properties": {
+                "enabled": {
+                    "type": "boolean",
+                    "title": "Enable PDB",
+                    "default": false
+                },
+                "minAvailable": {
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ],
+                    "title": "Minimum Available",
+                    "description": "Minimum available pods (number or percentage string)"
+                },
+                "maxUnavailable": {
+                    "oneOf": [
+                        {
+                            "type": "integer",
+                            "minimum": 0
+                        },
+                        {
+                            "type": "string"
+                        }
+                    ],
+                    "title": "Maximum Unavailable",
+                    "description": "Maximum unavailable pods (number or percentage string)"
+                }
+            }
+        },
+        "labels": {
+            "type": "object",
+            "title": "Custom Labels",
+            "description": "Additional labels for all resources",
+            "additionalProperties": {
+                "type": "string"
+            }
+        }
+    }
+}

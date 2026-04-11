@@ -1,0 +1,9 @@
+{{ .Chart.Name }} {{ .Chart.AppVersion }} has been deployed.
+
+{{- if contains "LoadBalancer" .Values.service.type }}
+  NOTE: LoadBalancer IP may take a few minutes to be assigned.
+  kubectl get svc --namespace {{ .Release.Namespace }} {{ include "fullname" . }}
+{{- else }}
+  kubectl --namespace {{ .Release.Namespace }} port-forward svc/{{ include "fullname" . }} {{ .Values.service.port }}:{{ .Values.service.port }}
+  Then visit: http://localhost:{{ .Values.service.port }}
+{{- end }}

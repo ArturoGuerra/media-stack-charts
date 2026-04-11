@@ -1,74 +1,36 @@
-{{- range $name, $vol := .Values.controller.volumes }}
-{{- if $vol.enabled }}
-{{- if not $vol.existingClaim }}
-{{- if not $vol.emptyDir }}
+{{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ template "pvc.fullname" $ }}-controller-{{ $name }}
+  name: {{ template "pvc.fullname" . }}
   annotations:
     helm.sh/resource-policy: keep
 spec:
-  {{- if .storageClassName }}
-  storageClassName: {{ $vol.storageClassName }}
+  {{- if .Values.persistence.storageClass }}
+  storageClassName: {{ .Values.persistence.storageClass }}
   {{- end }}
   accessModes:
-  - {{ $vol.accessMode | default "ReadWriteOnce" }}
+  - {{ .Values.persistence.accessMode | default "ReadWriteOnce" }}
   resources:
     requests:
-      storage: {{ $vol.size }}
+      storage: {{ .Values.persistence.size }}
+{{- end }}
+{{- if and .Values.configs.enabled (not .Values.configs.existingClaim) }}
 ---
-{{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
-{{- range $nname, $node := .Values.workers.nodes }}
-{{- range $vname, $vol := $.Values.workers.volumes }}
-{{- if $vol.enabled }}
-{{- if not $vol.existingClaim }}
-{{- if not $vol.emptyDir }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ template "pvc.fullname" $ }}-node-{{ $nname }}-{{ $vname }}
+  name: {{ template "pvc.fullname" . }}-configs
   annotations:
     helm.sh/resource-policy: keep
 spec:
-  {{- if $vol.storageClassName }}
-  storageClassName: {{ $vol.storageClassName }}
+  {{- if .Values.configs.storageClass }}
+  storageClassName: {{ .Values.configs.storageClass }}
   {{- end }}
   accessModes:
-  - {{ $vol.accessMode }}
+  - {{ .Values.configs.accessMode | default "ReadWriteOnce" }}
   resources:
     requests:
-      storage: {{ $vol.size }}
----
-{{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
-{{- end }}
-{{- range $name, $vol := .Values.volumes }}
-{{- if $vol.enabled }}
-{{- if not $vol.existingClaim }}
-{{- if not $vol.emptyDir }}
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ template "pvc.fullname" $ }}-{{ $name }}
-  annotations:
-    helm.sh/resource-policy: keep
-spec:
-  {{- if $vol.storageClassName }}
-  storageClassName: {{ $vol.storageClassName }}
-  {{- end }}
-  accessModes:
-  - {{ $vol.accessMode | default "ReadWriteOnce" }}
-  resources:
-    requests:
-      storage: {{ $vol.size }}
----
-{{- end }}
-{{- end }}
-{{- end }}
+      storage: {{ .Values.configs.size }}
 {{- end }}

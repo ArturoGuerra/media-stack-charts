@@ -21,9 +21,7 @@ spec:
           service:
             name: {{ template "service.fullname" $ }}
             port:
-              {{- with (first $.Values.service.ports) }}
-              number: {{ .port }}
-              {{- end }}
+              number: {{ $.Values.service.port }}
   {{- end }}
   {{- if .Values.ingress.tls }}
   tls:

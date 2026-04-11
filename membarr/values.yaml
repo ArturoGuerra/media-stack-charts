@@ -1,0 +1,56 @@
+# Default values for membarr.
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+image:
+  repository: yoruio/membarr
+  pullPolicy: IfNotPresent
+  tag: "latest"
+
+imagePullSecrets: []
+
+nameOverride: ""
+fullnameOverride: ""
+
+persistence:
+  enabled: true
+  mountPath: /app/app/config
+  size: 1Gi
+  storageClass: ""
+  accessMode: ReadWriteOnce
+  existingClaim: ""
+
+extraVolumes: []
+extraVolumeMounts: []
+extraEnvVars: []
+
+env:
+  TZ: "America/New_York"
+
+resources:
+  limits:
+    cpu: 200m
+    memory: 256Mi
+  requests:
+    cpu: 50m
+    memory: 64Mi
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+podAnnotations: {}
+extraEnvFrom: []
+
+podSecurityContext: {}
+
+containerSecurityContext: {}
+
+revisionHistoryLimit: 3
+
+strategy:
+  type: Recreate

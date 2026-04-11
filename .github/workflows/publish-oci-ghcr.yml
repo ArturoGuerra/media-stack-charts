@@ -1,0 +1,96 @@
+name: Publish Helm Charts to GHCR (OCI)
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'Makefile'
+      - 'common/**'
+      - 'bazarr/**'
+      - 'checkrr/**'
+      - 'cleanuparr/**'
+      - 'doplarr/**'
+      - 'jellyfin/**'
+      - 'lidarr/**'
+      - 'maintainerr/**'
+      - 'membarr/**'
+      - 'nzbget/**'
+      - 'plexmediaserver/**'
+      - 'prowlarr/**'
+      - 'qbittorrent/**'
+      - 'qui/**'
+      - 'radarr/**'
+      - 'recyclarr/**'
+      - 'requestrr/**'
+      - 'scraparr/**'
+      - 'sonarr/**'
+      - 'tautulli/**'
+      - 'tdarr/**'
+      - 'unpackerr/**'
+      - 'wizarr/**'
+      - '.github/workflows/publish-oci-ghcr.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: publish-oci-ghcr-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Helm
+        uses: azure/setup-helm@v4
+
+      - name: Login to GHCR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "$GITHUB_TOKEN" | helm registry login ghcr.io -u "${{ github.actor }}" --password-stdin
+
+      - name: Build dependencies and package charts
+        run: make package
+
+      - name: Push charts to GHCR (skip existing versions)
+        env:
+          REPO_OWNER: ${{ github.repository_owner }}
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -euo pipefail
+
+          owner_lc="$(echo "$REPO_OWNER" | tr '[:upper:]' '[:lower:]')"
+          repo_lc="$(echo "$REPO_NAME" | tr '[:upper:]' '[:lower:]')"
+          oci_base="ghcr.io/${owner_lc}/${repo_lc}"
+
+          echo "Publishing charts under oci://${oci_base}/<chart-name>"
+
+          shopt -s nullglob
+          for pkg in dist/*.tgz; do
+            meta="$(helm show chart "$pkg")"
+            chart_name="$(echo "$meta" | awk '/^name:/{print $2; exit}')"
+            chart_version="$(echo "$meta" | awk '/^version:/{print $2; exit}')"
+
+            if [[ -z "$chart_name" || -z "$chart_version" ]]; then
+              echo "Unable to determine name/version for package: $pkg"
+              exit 1
+            fi
+
+            target_ref="oci://${oci_base}/${chart_name}"
+
+            if helm show chart "$target_ref" --version "$chart_version" >/dev/null 2>&1; then
+              echo "Skip ${chart_name}:${chart_version} (already exists)"
+              continue
+            fi
+
+            echo "Push ${chart_name}:${chart_version}"
+            helm push "$pkg" "oci://${oci_base}"
+          done

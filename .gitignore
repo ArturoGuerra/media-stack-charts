@@ -1,0 +1,23 @@
+# Helm dependency/vendor artifacts
+**/charts/*.tgz
+
+# Helm packaged chart outputs
+dist/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Editor/IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Local env/tooling
+.env
+.env.*
+.direnv/
+
+.claude/

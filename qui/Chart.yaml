@@ -1,0 +1,15 @@
+apiVersion: v2
+name: qui
+description: Helm chart for Qui, a web dashboard for autobrr metrics and status
+type: application
+version: 1.0.0
+appVersion: "latest"
+home: https://github.com/autobrr/qui
+sources:
+  - https://github.com/autobrr/qui
+maintainers:
+  - name: arturo
+dependencies:
+  - name: common
+    version: "1.0.0"
+    repository: "file://../common"

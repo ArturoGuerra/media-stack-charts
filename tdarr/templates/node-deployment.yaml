@@ -1,0 +1,77 @@
+{{- if .Values.node.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "fullname" . }}-node
+  labels: {{ include "labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.node.replicaCount }}
+  revisionHistoryLimit: {{ default 3 .Values.revisionHistoryLimit }}
+  strategy:
+    type: {{ default "Recreate" .Values.strategy.type }}
+  selector:
+    matchLabels:
+      {{- include "selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: node
+  template:
+    metadata:
+      labels:
+        {{- include "selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: node
+      {{- with .Values.podAnnotations }}
+      annotations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with .Values.podSecurityContext }}
+      securityContext: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: tdarr-node
+        image: {{ printf "%s:%s" .Values.node.image.repository (.Values.node.image.tag | default .Chart.AppVersion) }}
+        imagePullPolicy: {{ .Values.node.image.pullPolicy }}
+        {{- with .Values.containerSecurityContext }}
+        securityContext: {{- toYaml . | nindent 10 }}
+        {{- end }}
+        env:
+        - name: serverIP
+          value: {{ template "service.fullname" . }}
+        envFrom:
+        - configMapRef:
+            name: {{ template "configmap.fullname" . }}-node
+        resources:
+          {{- toYaml .Values.node.resources | nindent 10 }}
+        volumeMounts:
+        {{- if .Values.node.transcode.enabled }}
+        - name: transcode
+          mountPath: {{ .Values.node.transcode.mountPath }}
+        {{- end }}
+        {{- with .Values.node.extraVolumeMounts }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      volumes:
+      {{- if .Values.node.transcode.enabled }}
+      - name: transcode
+        emptyDir:
+          {{- if .Values.node.transcode.medium }}
+          medium: {{ .Values.node.transcode.medium }}
+          {{- end }}
+          {{- if .Values.node.transcode.sizeLimit }}
+          sizeLimit: {{ .Values.node.transcode.sizeLimit }}
+          {{- end }}
+      {{- end }}
+      {{- with .Values.node.extraVolumes }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- if .Values.node.nodeSelector }}
+      nodeSelector: {{- toYaml .Values.node.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if .Values.node.tolerations }}
+      tolerations: {{- toYaml .Values.node.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if .Values.node.affinity }}
+      affinity: {{- toYaml .Values.node.affinity | nindent 8 }}
+      {{- end }}
+{{- end }}

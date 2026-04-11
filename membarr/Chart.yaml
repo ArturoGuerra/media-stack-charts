@@ -1,0 +1,16 @@
+apiVersion: v2
+name: membarr
+description: Helm chart for Membarr, a Discord bot for inviting users to Plex or Jellyfin
+type: application
+version: 1.0.0
+appVersion: "latest"
+home: https://github.com/Yoruio/Membarr
+sources:
+  - https://github.com/Yoruio/Membarr
+  - https://hub.docker.com/r/yoruio/membarr
+maintainers:
+  - name: arturo
+dependencies:
+  - name: common
+    version: "1.0.0"
+    repository: "file://../common"

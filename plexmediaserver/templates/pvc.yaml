@@ -1,23 +1,36 @@
-{{- range $k, $v := .Values.persistence -}}
-{{- if $v.enabled }}
-{{- if not $v.existingClaim }}
-{{- if not $v.emptyDir }}
+{{- if and .Values.persistence.enabled (not .Values.persistence.existingClaim) }}
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ template "pvc.fullname" $ }}-{{ $k }}
+  name: {{ template "pvc.fullname" . }}
   annotations:
     helm.sh/resource-policy: keep
 spec:
-  {{- if $v.storageClassName }}
-  storageClassName: {{ $v.storageClassName }}
+  {{- if .Values.persistence.storageClass }}
+  storageClassName: {{ .Values.persistence.storageClass }}
   {{- end }}
-  accessModes: 
-  - {{ $v.accessMode | default "ReadWriteOnce" }}
+  accessModes:
+  - {{ .Values.persistence.accessMode | default "ReadWriteOnce" }}
   resources:
     requests:
-      storage: {{ $v.size }}
+      storage: {{ .Values.persistence.size }}
 {{- end }}
+{{- if and .Values.transcode.enabled (not .Values.transcode.existingClaim) }}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: {{ template "pvc.fullname" . }}-transcode
+  annotations:
+    helm.sh/resource-policy: keep
+spec:
+  {{- if .Values.transcode.storageClass }}
+  storageClassName: {{ .Values.transcode.storageClass }}
+  {{- end }}
+  accessModes:
+  - {{ .Values.transcode.accessMode | default "ReadWriteOnce" }}
+  resources:
+    requests:
+      storage: {{ .Values.transcode.size }}
 {{- end }}
-{{- end }}
-{{- end -}}

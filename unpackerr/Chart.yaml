@@ -1,0 +1,15 @@
+apiVersion: v2
+name: unpackerr
+description: Helm chart for Unpackerr, a daemon that extracts downloads for Sonarr, Radarr, and Lidarr
+type: application
+version: 1.0.0
+appVersion: "0.14.5"
+home: https://unpackerr.zip/
+sources:
+  - https://github.com/unpackerr/unpackerr
+maintainers:
+  - name: arturo
+dependencies:
+  - name: common
+    version: "1.0.0"
+    repository: "file://../common"
