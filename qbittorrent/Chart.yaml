@@ -2,7 +2,7 @@ apiVersion: v2
 name: qbittorrent
 description: Helm chart for qBittorrent, a BitTorrent client with a web UI
 type: application
-version: 1.0.0
+version: 1.0.1
 appVersion: "5.1.4"
 home: https://www.qbittorrent.org/
 sources:

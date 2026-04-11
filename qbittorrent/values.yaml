@@ -15,7 +15,7 @@ imagePullSecrets: []
 nameOverride: ""
 fullnameOverride: ""
 service:
-  type: LoadBalancer
+  type: ClusterIP
   port: 8080
   externalTrafficPolicy: Cluster
   loadBalancerIP: ""
