@@ -21,7 +21,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ template "pvc.fullname" . }}-cache
+  name: {{ template "fullname" . }}-cache
   annotations:
     helm.sh/resource-policy: keep
 spec:
