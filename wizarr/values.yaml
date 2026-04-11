@@ -126,14 +126,6 @@ podSecurityContext: {}
 
 containerSecurityContext: {}
 
-readinessProbe:
-  enabled: true
-  initialDelaySeconds: 15
-  periodSeconds: 10
-  timeoutSeconds: 5
-  failureThreshold: 6
-  successThreshold: 1
-
 startupProbe:
   enabled: false
   initialDelaySeconds: 0

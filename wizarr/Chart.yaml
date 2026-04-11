@@ -2,7 +2,7 @@ apiVersion: v2
 name: wizarr
 description: Helm chart for Wizarr, an automatic user invitation and management system for Plex and Jellyfin
 type: application
-version: 1.0.1
+version: 1.1.0
 appVersion: "v2026.4.0"
 home: https://github.com/wizarrrr/wizarr
 sources:

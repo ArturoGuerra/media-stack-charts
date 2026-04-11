@@ -534,53 +534,6 @@
                 }
             }
         },
-        "readinessProbe": {
-            "type": "object",
-            "title": "Readiness Probe",
-            "description": "Pod readiness probe configuration",
-            "properties": {
-                "enabled": {
-                    "type": "boolean",
-                    "title": "Enable Readiness Probe",
-                    "default": true
-                },
-                "initialDelaySeconds": {
-                    "type": "integer",
-                    "title": "Initial Delay",
-                    "description": "Delay before first probe (seconds)",
-                    "minimum": 0,
-                    "default": 15
-                },
-                "periodSeconds": {
-                    "type": "integer",
-                    "title": "Period",
-                    "description": "Probe interval (seconds)",
-                    "minimum": 1,
-                    "default": 10
-                },
-                "timeoutSeconds": {
-                    "type": "integer",
-                    "title": "Timeout",
-                    "description": "Probe timeout (seconds)",
-                    "minimum": 1,
-                    "default": 5
-                },
-                "failureThreshold": {
-                    "type": "integer",
-                    "title": "Failure Threshold",
-                    "description": "Failed probe attempts before removal from service",
-                    "minimum": 1,
-                    "default": 6
-                },
-                "successThreshold": {
-                    "type": "integer",
-                    "title": "Success Threshold",
-                    "description": "Successful probe attempts required",
-                    "minimum": 1,
-                    "default": 1
-                }
-            }
-        },
         "startupProbe": {
             "type": "object",
             "title": "Startup Probe",
