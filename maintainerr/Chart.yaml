@@ -2,8 +2,8 @@ apiVersion: v2
 name: maintainerr
 description: Helm chart for Maintainerr, a tool for managing and cleaning up media libraries
 type: application
-version: 1.0.0
-appVersion: "2.2.1"
+version: 1.0.1
+appVersion: "3.5"
 home: https://github.com/Maintainerr/Maintainerr
 sources:
   - https://github.com/Maintainerr/Maintainerr
