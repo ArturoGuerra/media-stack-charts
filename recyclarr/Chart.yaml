@@ -3,7 +3,7 @@ name: recyclarr
 description: Helm chart for Recyclarr, a CLI tool that syncs Trash Guides settings to Sonarr and Radarr
 type: application
 version: 1.0.0
-appVersion: "7.4.1"
+appVersion: "8.5.1"
 home: https://recyclarr.dev/
 sources:
   - https://github.com/recyclarr/recyclarr
