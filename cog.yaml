@@ -1,0 +1,12 @@
+from_latest_tag: true
+ignore_merge_commits: true
+
+changelog:
+  path: CHANGELOG.md
+  authors:
+    - signature: "Arturo Guerra"
+      username: "arguerra"
+
+bump_profiles: {}
+
+packages: {}
