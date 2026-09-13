@@ -1,0 +1,13 @@
+{{- $root := $ }}
+{{- range $name, $instance := .Values.worker.instances }}
+{{- $worker := include "tdarr.worker.merge" (dict "root" $root "instance" $instance) | fromYaml }}
+{{- if $worker.enabled }}
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "configmap.fullname" $root }}-{{ $name }}
+  labels: {{ include "labels" $root | nindent 4 }}
+data: {{ toYaml $worker.env | nindent 2 }}
+{{- end }}
+{{- end }}

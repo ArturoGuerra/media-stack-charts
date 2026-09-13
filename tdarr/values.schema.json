@@ -873,6 +873,64 @@
           "description": "Use existing PersistentVolumeClaim instead of creating new"
         }
       }
+    },
+    "worker": {
+      "type": "object",
+      "title": "Worker (Tdarr Node) Configuration",
+      "description": "Configuration for one or more Tdarr worker (node) Deployments",
+      "properties": {
+        "defaults": {
+          "type": "object",
+          "title": "Worker Defaults",
+          "description": "Baseline configuration merged onto every entry in worker.instances",
+          "properties": {
+            "enabled": {
+              "type": "boolean",
+              "description": "Whether this worker is enabled by default"
+            },
+            "replicaCount": {
+              "type": "integer",
+              "description": "Number of replicas for this worker"
+            },
+            "image": { "$ref": "#/properties/image" },
+            "runtimeClassName": {
+              "type": "string",
+              "description": "Kubernetes RuntimeClass to use for this worker's pods (e.g. \"nvidia\")"
+            },
+            "transcode": {
+              "type": "object",
+              "title": "Transcode Scratch Volume",
+              "description": "emptyDir used for in-progress transcodes",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "mountPath": { "type": "string" },
+                "medium": { "type": "string" },
+                "sizeLimit": { "type": "string" }
+              }
+            },
+            "extraVolumes": { "$ref": "#/properties/extraVolumes" },
+            "extraVolumeMounts": { "$ref": "#/properties/extraVolumeMounts" },
+            "env": { "$ref": "#/properties/env" },
+            "resources": { "$ref": "#/properties/resources" },
+            "imagePullSecrets": { "$ref": "#/properties/imagePullSecrets" },
+            "podAnnotations": { "$ref": "#/properties/podAnnotations" },
+            "podSecurityContext": { "$ref": "#/properties/podSecurityContext" },
+            "containerSecurityContext": { "$ref": "#/properties/containerSecurityContext" },
+            "nodeSelector": { "$ref": "#/properties/nodeSelector" },
+            "tolerations": { "$ref": "#/properties/tolerations" },
+            "affinity": { "$ref": "#/properties/affinity" }
+          }
+        },
+        "instances": {
+          "type": "object",
+          "title": "Worker Instances",
+          "description": "Map of worker-name -> overrides, deep-merged onto worker.defaults. Each key becomes part of the Deployment/ConfigMap name (<fullname>-<key>).",
+          "additionalProperties": {
+            "type": "object",
+            "description": "Partial override of worker.defaults for this instance"
+          }
+        }
+      }
     }
   },
   "title": "Tdarr Helm Chart Values",

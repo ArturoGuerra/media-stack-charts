@@ -1,0 +1,85 @@
+{{- $root := $ }}
+{{- range $name, $instance := .Values.worker.instances }}
+{{- $worker := include "tdarr.worker.merge" (dict "root" $root "instance" $instance) | fromYaml }}
+{{- if $worker.enabled }}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "fullname" $root }}-{{ $name }}
+  labels: {{ include "labels" $root | nindent 4 }}
+spec:
+  replicas: {{ $worker.replicaCount }}
+  revisionHistoryLimit: {{ default 3 $root.Values.revisionHistoryLimit }}
+  strategy:
+    type: {{ default "Recreate" $root.Values.strategy.type }}
+  selector:
+    matchLabels:
+      {{- include "selectorLabels" $root | nindent 6 }}
+      app.kubernetes.io/component: {{ $name }}
+  template:
+    metadata:
+      labels:
+        {{- include "selectorLabels" $root | nindent 8 }}
+        app.kubernetes.io/component: {{ $name }}
+      {{- with ($worker.podAnnotations | default $root.Values.podAnnotations) }}
+      annotations: {{- toYaml . | nindent 8 }}
+      {{- end }}
+    spec:
+      {{- with $worker.runtimeClassName }}
+      runtimeClassName: {{ . }}
+      {{- end }}
+      {{- with ($worker.imagePullSecrets | default $root.Values.imagePullSecrets) }}
+      imagePullSecrets: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      {{- with ($worker.podSecurityContext | default $root.Values.podSecurityContext) }}
+      securityContext: {{- toYaml . | nindent 8 }}
+      {{- end }}
+      containers:
+      - name: tdarr-node
+        image: {{ printf "%s:%s" $worker.image.repository ($worker.image.tag | default $root.Chart.AppVersion) }}
+        imagePullPolicy: {{ $worker.image.pullPolicy }}
+        {{- with ($worker.containerSecurityContext | default $root.Values.containerSecurityContext) }}
+        securityContext: {{- toYaml . | nindent 10 }}
+        {{- end }}
+        env:
+        - name: serverIP
+          value: {{ include "service.fullname" $root }}
+        envFrom:
+        - configMapRef:
+            name: {{ include "configmap.fullname" $root }}-{{ $name }}
+        resources:
+          {{- toYaml $worker.resources | nindent 10 }}
+        volumeMounts:
+        {{- if $worker.transcode.enabled }}
+        - name: transcode
+          mountPath: {{ $worker.transcode.mountPath }}
+        {{- end }}
+        {{- with $worker.extraVolumeMounts }}
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+      volumes:
+      {{- if $worker.transcode.enabled }}
+      - name: transcode
+        emptyDir:
+          {{- if $worker.transcode.medium }}
+          medium: {{ $worker.transcode.medium }}
+          {{- end }}
+          {{- if $worker.transcode.sizeLimit }}
+          sizeLimit: {{ $worker.transcode.sizeLimit }}
+          {{- end }}
+      {{- end }}
+      {{- with $worker.extraVolumes }}
+      {{- toYaml . | nindent 6 }}
+      {{- end }}
+      {{- if $worker.nodeSelector }}
+      nodeSelector: {{- toYaml $worker.nodeSelector | nindent 8 }}
+      {{- end }}
+      {{- if $worker.tolerations }}
+      tolerations: {{- toYaml $worker.tolerations | nindent 8 }}
+      {{- end }}
+      {{- if $worker.affinity }}
+      affinity: {{- toYaml $worker.affinity | nindent 8 }}
+      {{- end }}
+{{- end }}
+{{- end }}

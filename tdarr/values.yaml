@@ -144,34 +144,81 @@ podDisruptionBudget:
   minAvailable: 1
   maxUnavailable: ""
 
-# Node worker configuration
-node:
-  enabled: true
-  replicaCount: 1
-  image:
-    repository: ghcr.io/haveagitgat/tdarr_node
-    pullPolicy: IfNotPresent
-    tag: ""
-  transcode:
+# Worker (Tdarr Node) configuration.
+#
+# `worker.defaults` is the baseline applied to every worker instance.
+# `worker.instances` is a map of worker-name -> overrides, deep-merged onto
+# `worker.defaults`. This lets you run multiple, differently configured
+# Tdarr workers at once (e.g. one GPU worker, one CPU-only worker).
+#
+# Each instance renders its own Deployment/ConfigMap named
+# "<fullname>-<instance-key>" and gets its own
+# "app.kubernetes.io/component: worker-<instance-key>" selector label.
+#
+# The "node" instance key is kept (not renamed to e.g. "default") so that
+# upgrading from the previous single-worker chart version is a no-op: it
+# keeps producing "<fullname>-node" instead of forcing Kubernetes to
+# recreate the Deployment/ConfigMap.
+worker:
+  defaults:
     enabled: true
-    mountPath: /transcode
-    medium: ""
-    sizeLimit: ""
-  extraVolumes: []
-  extraVolumeMounts: []
-  env:
-    TZ: "America/New_York"
-    PUID: "1000"
-    PGID: "1000"
-    nodeName: "ExternalNode"
-    serverPort: "8266"
-  resources:
-    limits:
-      cpu: 4000m
-      memory: 4096Mi
-    requests:
-      cpu: 500m
-      memory: 1024Mi
-  nodeSelector: {}
-  tolerations: []
-  affinity: {}
+    replicaCount: 1
+    image:
+      repository: ghcr.io/haveagitgat/tdarr_node
+      pullPolicy: IfNotPresent
+      tag: ""
+    # Kubernetes RuntimeClass for this worker's pods (e.g. "nvidia"). Leave
+    # empty to use the cluster default.
+    runtimeClassName: ""
+    transcode:
+      enabled: true
+      mountPath: /transcode
+      medium: ""
+      sizeLimit: ""
+    extraVolumes: []
+    extraVolumeMounts: []
+    env:
+      TZ: "America/New_York"
+      PUID: "1000"
+      PGID: "1000"
+      nodeName: "ExternalNode"
+      serverPort: "8266"
+    resources:
+      limits:
+        cpu: 4000m
+        memory: 4096Mi
+      requests:
+        cpu: 500m
+        memory: 1024Mi
+    # Leave these empty ([]/{}) to inherit the chart-level
+    # imagePullSecrets/podAnnotations/podSecurityContext/
+    # containerSecurityContext defined at the top of this file. Set a
+    # non-empty value here (or per-instance) to override just that worker.
+    imagePullSecrets: []
+    podAnnotations: {}
+    podSecurityContext: {}
+    containerSecurityContext: {}
+    nodeSelector: {}
+    tolerations: []
+    affinity: {}
+
+  instances:
+    node:
+      env:
+        nodeName: "ExternalNode"
+
+    # Example: a second, GPU-enabled worker running alongside "node".
+    # gpu:
+    #   runtimeClassName: nvidia
+    #   env:
+    #     nodeName: "GpuNode"
+    #   resources:
+    #     limits:
+    #       cpu: 4000m
+    #       memory: 8192Mi
+    #       nvidia.com/gpu: "1"
+    #     requests:
+    #       cpu: 1000m
+    #       memory: 2048Mi
+    #   nodeSelector:
+    #     gpu: "true"
