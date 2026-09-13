@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file. See [conventional commits](https://www.conventionalcommits.org/) for commit guidelines.
 
 - - -
+## 1.1.0 - 2026-09-13
+#### Miscellaneous Chores
+- (**version**) 0.1.0 - (a23a161) - Arturo Guerra
+
+- - -
+
 ## 0.1.0 - 2026-09-13
 #### Features
 - Refactor tdarr - (21cbafb) - Arturo Guerra
