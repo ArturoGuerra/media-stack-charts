@@ -21,7 +21,7 @@ spec:
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: {{ template "pvc.fullname" . }}-configs
+  name: {{ .Values.configs.existingClaim | default (printf "%s-configs" (include "fullname" .)) }}
   annotations:
     helm.sh/resource-policy: keep
 spec:
