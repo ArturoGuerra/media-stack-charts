@@ -9,10 +9,14 @@ spec:
   strategy:
     type: {{ default "Recreate" .Values.strategy.type }}
   selector:
-    matchLabels: {{ include "selectorLabels" . | nindent 6 }}
+    matchLabels:
+      {{- include "selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: server
   template:
     metadata:
-      labels: {{ include "selectorLabels" . | nindent 8 }}
+      labels:
+        {{- include "selectorLabels" . | nindent 8 }}
+        app.kubernetes.io/component: server
       {{- with .Values.podAnnotations }}
       annotations: {{- toYaml . | nindent 8 }}
       {{- end }}

@@ -6,7 +6,9 @@ metadata:
   labels: {{ include "labels" . | nindent 4 }}
 spec:
   selector:
-    matchLabels: {{ include "selectorLabels" . | nindent 6 }}
+    matchLabels:
+      {{- include "selectorLabels" . | nindent 6 }}
+      app.kubernetes.io/component: server
   {{- if .Values.podDisruptionBudget.minAvailable }}
   minAvailable: {{ .Values.podDisruptionBudget.minAvailable }}
   {{- end }}
