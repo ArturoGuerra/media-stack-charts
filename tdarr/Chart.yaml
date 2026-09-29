@@ -3,7 +3,7 @@ name: tdarr
 description: Helm chart for Tdarr, a distributed video transcoding and health-checking system
 type: application
 version: 2.0.3
-appVersion: "2.91.01"
+appVersion: "2.92.01"
 home: https://tdarr.io/
 sources:
   - https://github.com/HaveAGitGat/Tdarr
