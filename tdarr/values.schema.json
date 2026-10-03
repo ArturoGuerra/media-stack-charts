@@ -877,7 +877,7 @@
     "worker": {
       "type": "object",
       "title": "Worker (Tdarr Node) Configuration",
-      "description": "Configuration for one or more Tdarr worker (node) Deployments",
+      "description": "Configuration for one or more Tdarr worker (node) StatefulSets",
       "properties": {
         "defaults": {
           "type": "object",
@@ -896,6 +896,21 @@
             "runtimeClassName": {
               "type": "string",
               "description": "Kubernetes RuntimeClass to use for this worker's pods (e.g. \"nvidia\")"
+            },
+            "configs": {
+              "type": "object",
+              "title": "Worker Config Volume",
+              "description": "Per-pod PVC (via StatefulSet volumeClaimTemplates) mounted at /app/configs",
+              "properties": {
+                "enabled": { "type": "boolean" },
+                "mountPath": { "type": "string" },
+                "size": { "type": "string" },
+                "storageClass": { "type": "string" },
+                "accessMode": {
+                  "type": "string",
+                  "enum": ["ReadWriteOnce", "ReadWriteOncePod", "ReadWriteMany", "ReadOnlyMany"]
+                }
+              }
             },
             "transcode": {
               "type": "object",
@@ -924,7 +939,7 @@
         "instances": {
           "type": "object",
           "title": "Worker Instances",
-          "description": "Map of worker-name -> overrides, deep-merged onto worker.defaults. Each key becomes part of the Deployment/ConfigMap name (<fullname>-<key>).",
+          "description": "Map of worker-name -> overrides, deep-merged onto worker.defaults. Each key becomes part of the StatefulSet/ConfigMap/Service name (<fullname>-<key>).",
           "additionalProperties": {
             "type": "object",
             "description": "Partial override of worker.defaults for this instance"

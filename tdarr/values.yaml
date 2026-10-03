@@ -151,14 +151,14 @@ podDisruptionBudget:
 # `worker.defaults`. This lets you run multiple, differently configured
 # Tdarr workers at once (e.g. one GPU worker, one CPU-only worker).
 #
-# Each instance renders its own Deployment/ConfigMap named
+# Each instance renders its own StatefulSet/ConfigMap/headless Service named
 # "<fullname>-<instance-key>" and gets its own
 # "app.kubernetes.io/component: worker-<instance-key>" selector label.
 #
 # The "node" instance key is kept (not renamed to e.g. "default") so that
 # upgrading from the previous single-worker chart version is a no-op: it
 # keeps producing "<fullname>-node" instead of forcing Kubernetes to
-# recreate the Deployment/ConfigMap.
+# recreate the StatefulSet/ConfigMap.
 worker:
   defaults:
     enabled: true
@@ -170,6 +170,16 @@ worker:
     # Kubernetes RuntimeClass for this worker's pods (e.g. "nvidia"). Leave
     # empty to use the cluster default.
     runtimeClassName: ""
+    # Per-pod config volume (Tdarr_Node_Config.json etc.). Workers run as a
+    # StatefulSet, so every pod gets its own PVC via volumeClaimTemplates
+    # instead of sharing one claim, which lets RWO storage work when worker
+    # pods land on different Kubernetes nodes.
+    configs:
+      enabled: true
+      mountPath: /app/configs
+      size: 1Gi
+      storageClass: ""
+      accessMode: ReadWriteOnce
     transcode:
       enabled: true
       mountPath: /transcode

@@ -3,16 +3,28 @@
 {{- $worker := include "tdarr.worker.merge" (dict "root" $root "instance" $instance) | fromYaml }}
 {{- if $worker.enabled }}
 ---
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Service
 metadata:
   name: {{ include "fullname" $root }}-{{ $name }}
   labels: {{ include "labels" $root | nindent 4 }}
 spec:
+  clusterIP: None
+  selector:
+    {{- include "selectorLabels" $root | nindent 4 }}
+    app.kubernetes.io/component: {{ $name }}
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "fullname" $root }}-{{ $name }}
+  labels: {{ include "labels" $root | nindent 4 }}
+spec:
+  serviceName: {{ include "fullname" $root }}-{{ $name }}
   replicas: {{ $worker.replicaCount }}
   revisionHistoryLimit: {{ default 3 $root.Values.revisionHistoryLimit }}
-  strategy:
-    type: {{ default "Recreate" $root.Values.strategy.type }}
+  # Workers are independent of each other; start/stop them all at once.
+  podManagementPolicy: Parallel
   selector:
     matchLabels:
       {{- include "selectorLabels" $root | nindent 6 }}
@@ -45,12 +57,24 @@ spec:
         env:
         - name: serverIP
           value: {{ include "service.fullname" $root }}
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        # Suffix the configured nodeName (from envFrom) with the pod name so
+        # every replica registers with the server under a unique name.
+        - name: nodeName
+          value: "$(nodeName)-$(POD_NAME)"
         envFrom:
         - configMapRef:
             name: {{ include "configmap.fullname" $root }}-{{ $name }}
         resources:
           {{- toYaml $worker.resources | nindent 10 }}
         volumeMounts:
+        {{- if $worker.configs.enabled }}
+        - name: configs
+          mountPath: {{ $worker.configs.mountPath }}
+        {{- end }}
         {{- if $worker.transcode.enabled }}
         - name: transcode
           mountPath: {{ $worker.transcode.mountPath }}
@@ -81,5 +105,21 @@ spec:
       {{- if $worker.affinity }}
       affinity: {{- toYaml $worker.affinity | nindent 8 }}
       {{- end }}
+  {{- if $worker.configs.enabled }}
+  # One PVC per worker pod (configs-<statefulset>-<ordinal>), so RWO volumes
+  # work when replicas are scheduled onto different Kubernetes nodes.
+  volumeClaimTemplates:
+  - metadata:
+      name: configs
+    spec:
+      {{- if $worker.configs.storageClass }}
+      storageClassName: {{ $worker.configs.storageClass }}
+      {{- end }}
+      accessModes:
+      - {{ $worker.configs.accessMode | default "ReadWriteOnce" }}
+      resources:
+        requests:
+          storage: {{ $worker.configs.size }}
+  {{- end }}
 {{- end }}
 {{- end }}
