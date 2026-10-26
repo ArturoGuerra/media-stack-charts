@@ -2,8 +2,8 @@ apiVersion: v2
 name: tdarr
 description: Helm chart for Tdarr, a distributed video transcoding and health-checking system
 type: application
-version: 3.0.0
-appVersion: "2.92.01"
+version: 3.1.0
+appVersion: "3.00.00"
 home: https://tdarr.io/
 sources:
   - https://github.com/HaveAGitGat/Tdarr

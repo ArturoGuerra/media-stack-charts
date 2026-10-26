@@ -2,8 +2,8 @@ apiVersion: v2
 name: requestrr
 description: Helm chart for Requestrr, a Discord chatbot for requesting media via Sonarr and Radarr
 type: application
-version: 1.0.0
-appVersion: "v2.1.9"
+version: 1.0.1
+appVersion: "v2.1.10"
 home: https://github.com/thomst08/requestrr
 sources:
   - https://github.com/thomst08/requestrr

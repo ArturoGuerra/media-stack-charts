@@ -5,7 +5,7 @@ DIST_DIR ?= dist
 REPO_URL ?=
 OCI_REGISTRY ?=
 
-.PHONY: verify lint template deps package repo-index oci-push clean
+.PHONY: verify lint template deps package repo-index oci-push clean charts-md
 
 verify: lint template package
 
@@ -47,3 +47,6 @@ oci-push: package
 
 clean:
 	rm -rf $(DIST_DIR)
+
+charts-md:
+	@scripts/gen-charts-md.sh $(CHARTS)

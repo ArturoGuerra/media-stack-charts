@@ -2,8 +2,8 @@ apiVersion: v2
 name: cleanuparr
 description: Helm chart for Cleanuparr, an automated cleanup tool for Sonarr and Radarr queues
 type: application
-version: 1.0.0
-appVersion: "2.5.1"
+version: 1.0.1
+appVersion: "2.10.9"
 home: https://github.com/Cleanuparr/Cleanuparr
 sources:
   - https://github.com/Cleanuparr/Cleanuparr
